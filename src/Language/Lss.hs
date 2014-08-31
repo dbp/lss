@@ -8,6 +8,8 @@ import qualified Data.Map.Strict     as M
 import           Data.Monoid
 import           Data.Text           (Text)
 import qualified Data.Text           as T
+import qualified Language.Css.Parse  as P
+import qualified Language.Css.Pretty as C
 import qualified Language.Css.Syntax as C
 import           Prelude             hiding ((++))
 import qualified Text.XmlHtml        as X
@@ -16,6 +18,7 @@ import qualified Text.XmlHtml        as X
 (++) = mappend
 
 type ConstMap = Map C.Ident C.Expr
+type Symbol = String
 
 deriving instance Ord C.Ident
 unIdent :: C.Ident -> Text
@@ -55,5 +58,26 @@ apply state ident args = case M.lookup ident (sFunctions state) of
             C.CommaSep exp1 exp2 -> C.CommaSep (substExpr param arg exp1) (substExpr param arg exp2)
             C.SpaceSep exp1 exp2 -> C.SpaceSep (substExpr param arg exp1) (substExpr param arg exp2)
 
-attach :: [C.RuleSet] -> [X.Node] -> [X.Node]
-attach = undefined
+attach :: Symbol -> [C.RuleSet] -> [X.Node] -> [X.Node]
+attach sym rules nodes = styleNode : map (addClass ("." ++ T.pack sym)) nodes
+  where styleNode = X.Element "style" [("type", "text/css")] [X.TextNode $ T.pack $ C.prettyPrint $ C.StyleSheet Nothing [] (map (C.SRuleSet . addSels) rules)]
+        addSels (C.RuleSet sels decls) = C.RuleSet (concatMap addSel sels) decls
+        addSel sel = let desc = C.DescendSel (C.SSel (C.UnivSel [C.ClassSel sym])) sel
+                         adj = addAdj sel
+                     in [desc, adj]
+        addAdj sel = case sel of
+                       C.SSel sim -> addSSel sim
+                       C.DescendSel sel1 sel2 -> C.DescendSel (addAdj sel1) sel2
+                       C.ChildSel sel1 sel2 -> C.ChildSel (addAdj sel1) sel2
+                       C.AdjSel sel1 sel2 -> C.AdjSel (addAdj sel1) sel2
+        addSSel sim = case sim of
+                        C.UnivSel sels -> C.SSel (C.UnivSel (C.ClassSel sym : sels))
+                        C.TypeSel el sels -> C.SSel (C.TypeSel el (C.ClassSel sym : sels))
+        addClass classSym node =
+          case node of
+            X.Element _ attrs _ ->
+              let classAttr = case lookup "class" attrs  of
+                                Nothing -> ("class", classSym)
+                                Just cls -> ("class", classSym ++ " " ++ cls)
+              in node { X.elementAttrs = classAttr : filter ((/= "class").fst) attrs}
+            _ -> node
