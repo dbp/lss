@@ -1,7 +1,14 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module Language.Lss where
+module Language.Lss ( LssState(..)
+                    , LssFunc(..)
+                    , LssApp(..)
+                    , parseDefs
+                    , parseApp
+                    , apply
+                    , attach
+                    , unIdent) where
 
 import           Control.Applicative  ((<$>), (<*>))
 import           Control.Arrow        ((&&&))
