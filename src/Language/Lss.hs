@@ -88,7 +88,7 @@ parseApp = A.parseOnly lssApplication
                             args <- A.option [] $ do
                               A.char '('
                               as <- A.option [] (do arg <- P.exprp
-                                                    rest <- A.many1 $ A.char ',' >> A.skipSpace >> P.exprp
+                                                    rest <- A.many' $ A.char ',' >> A.skipSpace >> P.exprp
                                                     return (arg:rest))
                               A.char ')'
                               return as
@@ -117,7 +117,7 @@ apply state ident args = case M.lookup ident (sFunctions state) of
             C.SpaceSep exp1 exp2 -> C.SpaceSep (substExpr param arg exp1) (substExpr param arg exp2)
 
 attach :: Symbol -> [C.RuleSet] -> [X.Node] -> [X.Node]
-attach sym rules nodes = styleNode : map (addClass ("." ++ T.pack sym)) nodes
+attach sym rules nodes = styleNode : map (addClass (T.pack sym)) nodes
   where styleNode = X.Element "style" [("type", "text/css")] [X.TextNode $ T.pack $ C.prettyPrint $ C.StyleSheet Nothing [] (map (C.SRuleSet . addSels) rules)]
         addSels (C.RuleSet sels decls) = C.RuleSet (concatMap addSel sels) decls
         addSel sel = let desc = C.DescendSel (C.SSel (C.UnivSel [C.ClassSel sym])) sel
