@@ -34,6 +34,8 @@ data LssState = LssState { sConstants :: ConstMap, sFunctions ::  Map C.Ident Ls
 
 data LssFunc = LssFunc { fParams :: [C.Ident], fLocalConstants :: ConstMap, fBody :: [C.RuleSet] } deriving Show
 
+data LssApp = LssApp { aIdent :: C.Ident, cArgs :: [C.Expr]} deriving Show
+
 instance Monoid LssState where
   mempty = LssState M.empty M.empty
   mappend (LssState c1 f1) (LssState c2 f2) = LssState (M.union c2 c1) (M.union f2 f1)
@@ -46,9 +48,9 @@ data FunOrConstOrRule = Fun { unFun :: (C.Ident, LssFunc) }
 isConst (Const _) = True
 isConst _ = False
 
-parse :: Text -> Either String LssState
-parse = A.parseOnly lssGrammar
-  where lssGrammar = do res <- A.many' (A.choice [A.skipSpace >> fun, A.skipSpace >> parseCon])
+parseDefs :: Text -> Either String LssState
+parseDefs = A.parseOnly lssGrammar
+  where lssGrammar = do res <- A.many' (A.choice [A.skipSpace >> fun, A.skipSpace >> con])
                         traceShow res (return ())
                         let (cons, funs) = partition isConst res
                         return (LssState (M.fromList $ map unConst cons) (M.fromList $ map unFun funs))
@@ -62,18 +64,28 @@ parse = A.parseOnly lssGrammar
                    return ps
                  A.skipSpace
                  A.char '{'
-                 res <- A.many' (A.choice [Rule <$> (A.skipSpace >> P.rulesetp), A.skipSpace >> parseCon])
+                 res <- A.many' (A.choice [Rule <$> (A.skipSpace >> P.rulesetp), A.skipSpace >> con])
                  let (cons, rules) = partition isConst res
                  A.skipSpace
                  A.char '}'
                  return $ Fun (ident, LssFunc params (M.fromList $ map unConst cons) (map unRule rules))
+        con = do ident <- P.identp
+                 A.skipSpace
+                 A.char '='
+                 A.skipSpace
+                 expr <- P.exprp
+                 return $ Const (ident, expr)
 
-parseCon = do ident <- P.identp
-              A.skipSpace
-              A.char '='
-              A.skipSpace
-              expr <- P.exprp
-              return $ Const (ident, expr)
+parseApp = A.parseOnly lssApplication
+  where lssApplication = do id <- P.identp
+                            args <- A.option [] $ do
+                              A.char '('
+                              as <- A.option [] (do arg <- P.exprp
+                                                    rest <- A.many1 $ A.char ',' >> A.skipSpace >> P.exprp
+                                                    return (arg:rest))
+                              A.char ')'
+                              return as
+                            return $ LssApp id args
 
 apply :: LssState -> C.Ident -> [C.Expr] -> Either Text [C.RuleSet]
 apply state ident args = case M.lookup ident (sFunctions state) of
