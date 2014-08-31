@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Snap.Snaplet.Lss where
 
-import           Control.Monad      (forM)
+import           Control.Monad      (when)
+import           Data.List          (isSuffixOf)
 import           Data.Monoid
 import           Data.Text          (Text)
 import qualified Data.Text.IO       as T
@@ -21,11 +22,17 @@ data Lss = Lss
 initLss :: Snaplet (Heist b) -> SnapletInit b Lss
 initLss heist = makeSnaplet "lss" "" Nothing $ do
   dir <- getSnapletFilePath
+  dirExists <- liftIO $ doesDirectoryExist dir
+  when (not dirExists) $ createDirectory dir
   files <- liftIO $ getDirectoryContents dir
-  st <- foldM (\s f -> do c <- liftIO $ T.readFile f
-                          case parseDefs c of
-                            Left err -> error $ "Lss: Error parsing file " ++ f ++ ": " ++ err
-                            Right state -> return $ mappend s state)
+  st <- foldM (\s f -> do isF <- liftIO $ doesFileExist f
+                          if not isF || not (isSuffixOf ".lss" f)
+                             then sundefined
+                             else do
+                              c <- liftIO $ T.readFile f
+                              case parseDefs c of
+                                Left err -> error $ "Lss: Error parsing file " ++ f ++ ": " ++ err
+                                Right state -> return $ mappend s state)
               mempty
               files
   addConfig heist mempty { hcInterpretedSplices = lssSplices st }
