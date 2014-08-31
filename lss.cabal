@@ -19,7 +19,9 @@ library
                        heist,
                        snap,
                        text,
-                       directory
+                       directory,
+                       containers,
+                       attoparsec
   hs-source-dirs:      src/
   exposed-modules:
         Language.Lss,
