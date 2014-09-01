@@ -24,7 +24,7 @@ two main goals / opinions:
    preprocessors that supports nesting, it would be more concisely
    represented by something like:
 
-   ```Less
+   ```scss
    .article {
        p { ... }
        h3 { ... }
@@ -51,7 +51,7 @@ two main goals / opinions:
 
 # Examples
 
-```Less
+```scss
 store(highlight-color) {
   .featured {
     width: 100%;
