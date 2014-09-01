@@ -24,11 +24,13 @@ two main goals / opinions:
    preprocessors that supports nesting, it would be more concisely
    represented by something like:
 
-    .article {
-      p { ... }
-      h3 { ... }
-      a { ... }
-    }
+   ```Less
+   .article {
+       p { ... }
+       h3 { ... }
+       a { ... }
+   }
+   ```
 
    LSS both restricts and expands this. Semantic blocks are not CSS
    selectors, and arbitrary nesting is not permitted. Our experience
@@ -40,14 +42,16 @@ two main goals / opinions:
    bizare that CSS does not support: LSS has constants. They can be
    either global or inside semantic blocks, and are defined with `=`, like:
 
-    acme-gray = #efefef
+   ```
+   acme-gray = #efefef
+   ```
 
    These can then be used anywhere a CSS identifier is legal, which is
    most places where you would want them.
 
 # Examples
 
-```css
+```Less
 store(highlight-color) {
   .featured {
     width: 100%;
