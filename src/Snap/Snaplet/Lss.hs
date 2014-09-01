@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Snap.Snaplet.Lss where
+module Snap.Snaplet.Lss (Lss(..), initLss, lssSplices) where
 
 import           Control.Monad      (when)
 import           Data.List          (isSuffixOf)
@@ -11,6 +11,7 @@ import           Data.Unique
 import           Heist              (Splices, getParamNode,
                                      hcInterpretedSplices, ( ## ))
 import           Heist.Interpreted  (Splice)
+import           Prelude            hiding ((++))
 import           Snap
 import           Snap.Snaplet.Heist (Heist, addConfig)
 import           System.Directory
@@ -18,6 +19,9 @@ import           System.FilePath
 import qualified Text.XmlHtml       as X
 
 import           Language.Lss
+
+(++) :: Monoid d => d -> d -> d
+(++) = mappend
 
 data Lss = Lss
 
@@ -28,13 +32,13 @@ initLss heist = makeSnaplet "lss" "" Nothing $ do
   when (not dirExists) $ liftIO $ createDirectory dir
   files <- map (dir </>) <$> liftIO (getDirectoryContents dir)
   st <- foldM (\s f -> do isF <- liftIO $ doesFileExist f
-                          if not isF || not (isSuffixOf ".lss" f)
+                          if not isF || not (".lss" `isSuffixOf` f)
                              then return s
                              else do
                               c <- liftIO $ T.readFile f
                               case parseDefs c of
                                 Left err -> error $ "Lss: Error parsing file " ++ f ++ ": " ++ err
-                                Right state -> return $ mappend s state)
+                                Right stat -> return $ mappend s stat)
               mempty
               files
   addConfig heist mempty { hcInterpretedSplices = lssSplices st }
@@ -55,5 +59,14 @@ lssSplices st = "lss" ## lssSplice
                           Left err -> error $ "Lss: error applying " ++ (T.unpack $ unIdent ident)
                                            ++ ": " ++ T.unpack err
                           Right rules -> do
-                            sym <- fmap (("lss" ++) . show . hashUnique) $ liftIO newUnique
-                            return $ attach sym rules (X.elementChildren n)
+                            let childs = case X.getAttribute "class" n of
+                                           Nothing -> X.elementChildren n
+                                           Just cls -> map (addClass cls) (X.elementChildren n)
+                            sym <- (("lss" ++) . show . hashUnique) <$> liftIO newUnique
+                            return $ attach sym rules childs
+          where addClass newCls n@(X.Element _ attrs _) =
+                  let classAttr = case lookup "class" attrs  of
+                                    Nothing -> ("class", newCls)
+                                    Just cls -> ("class", newCls ++ " " ++ cls)
+                  in n { X.elementAttrs = classAttr : filter ((/= "class").fst) attrs}
+                addClass _ n = n
