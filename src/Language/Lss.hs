@@ -10,7 +10,7 @@ module Language.Lss ( LssState(..)
                     , attach
                     , unIdent) where
 
-import           Control.Applicative  ((<$>), (<*>))
+import           Control.Applicative  ((<$>), (<*), (<*>))
 import           Control.Arrow        ((&&&))
 import qualified Data.Attoparsec.Text as A
 import           Data.List            (partition)
@@ -25,8 +25,6 @@ import qualified Language.Css.Syntax  as C
 import           Prelude              hiding ((++))
 import qualified Text.XmlHtml         as X
 
-import           Debug.Trace
-
 (++) :: Monoid d => d -> d -> d
 (++) = mappend
 
@@ -37,11 +35,11 @@ deriving instance Ord C.Ident
 unIdent :: C.Ident -> Text
 unIdent (C.Ident s) = T.pack s
 
-data LssState = LssState { sConstants :: ConstMap, sFunctions ::  Map C.Ident LssFunc} deriving Show
+data LssState = LssState { sConstants :: ConstMap, sFunctions ::  Map C.Ident LssFunc} deriving (Show, Eq)
 
-data LssFunc = LssFunc { fParams :: [C.Ident], fLocalConstants :: ConstMap, fBody :: [C.RuleSet] } deriving Show
+data LssFunc = LssFunc { fParams :: [C.Ident], fLocalConstants :: ConstMap, fBody :: [C.RuleSet] } deriving (Show, Eq)
 
-data LssApp = LssApp { aIdent :: C.Ident, cArgs :: [C.Expr]} deriving Show
+data LssApp = LssApp { aIdent :: C.Ident, cArgs :: [C.Expr]} deriving (Show, Eq)
 
 instance Monoid LssState where
   mempty = LssState M.empty M.empty
@@ -56,9 +54,8 @@ isConst (Const _) = True
 isConst _ = False
 
 parseDefs :: Text -> Either String LssState
-parseDefs = A.parseOnly lssGrammar
+parseDefs = A.parseOnly (lssGrammar <* A.endOfInput)
   where lssGrammar = do res <- A.many' (A.choice [A.skipSpace >> fun, A.skipSpace >> con])
-                        traceShow res (return ())
                         let (cons, funs) = partition isConst res
                         return (LssState (M.fromList $ map unConst cons) (M.fromList $ map unFun funs))
         fun = do ident <- P.identp
@@ -83,7 +80,7 @@ parseDefs = A.parseOnly lssGrammar
                  expr <- P.exprp
                  return $ Const (ident, expr)
 
-parseApp = A.parseOnly lssApplication
+parseApp = A.parseOnly (lssApplication <* A.endOfInput)
   where lssApplication = do id <- P.identp
                             args <- A.option [] $ do
                               A.char '('
