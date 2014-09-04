@@ -31,6 +31,9 @@ Test-Suite test-lss-snap
   main-is: Main.hs
   default-language:    Haskell2010
   build-depends: base >= 4.6 && < 4.8,
+                 snap,
+                 lens,
+                 text,
                  hspec-snap,
                  hspec2
   build-depends: lss-snap == 0.1.0.0

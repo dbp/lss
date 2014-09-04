@@ -1,0 +1,11 @@
+test {
+  p {
+    background-color: red;
+  }
+}
+
+test2(size) {
+  p {
+    font-size: size;
+  }
+}

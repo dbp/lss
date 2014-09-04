@@ -37,5 +37,5 @@ Test-Suite test-lss
                  containers,
                  attoparsec,
                  text,
-                 hspec >= 1.11 && < 1.12
+                 hspec2
   build-depends: lss == 0.1.0.0
