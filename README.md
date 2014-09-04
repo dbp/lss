@@ -36,7 +36,7 @@ two main goals / opinions:
    selectors, and arbitrary nesting is not permitted. Our experience
    has been that heavy nesting actually makes organizing and re-using
    portions of CSS more difficult. On the other hand, semantic blocks
-   can have parameters, to allow them to be more flexibly / general.
+   can have parameters, to allow them to be more flexible / general.
 
 3. This isn't really a goal or opinion, but something that it seems
    bizare that CSS does not support: LSS has constants. They can be
