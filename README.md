@@ -75,7 +75,12 @@ store(highlight-color) {
 
 # Tests
 
-To run the test suite, first install dependencies:
+There are test suites for both the core language (in package/directory
+`lss`) and the snap adaptor (in package/directory `lss-snap`).
+
+For each, change into the corresponding directory and:
+
+First install dependencies:
 
     cabal install --only-dependencies --enable-tests
 
@@ -88,11 +93,6 @@ with color output) by just running the test main (which is faster
 because it won't check and rebuild the library):
 
     cabal exec runghc -- test/Main.hs
-
-
-# Changelog
-
-0.1.0.0 - 2014-9-?? - Initial release.
 
 # License
 BSD3
