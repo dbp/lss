@@ -73,6 +73,16 @@ store(highlight-color) {
 }
 ```
 
+# Building
+
+This depends on the (unreleased as of now) library that has attoparsec
+parsers for the `language-css` library. I have a fork (currently
+unchanged) of that library at:
+https://github.com/dbp/language-css-attoparsec.
+
+You should install that locally, or `cabal sandbox add-source` a
+checkout of it.
+
 # Tests
 
 There are test suites for both the core language (in package/directory
