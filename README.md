@@ -76,7 +76,7 @@ store(highlight-color) {
 # Tests
 
 There are test suites for both the core language (in package/directory
-`lss`) and the snap adaptor (in package/directory `lss-snap`).
+`lss`) and the snap adaptor (in package/directory `snaplet-lss`).
 
 For each, change into the corresponding directory and:
 
