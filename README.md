@@ -76,12 +76,25 @@ store(highlight-color) {
 # Building
 
 This depends on the (unreleased as of now) library that has attoparsec
-parsers for the `language-css` library. I have a fork (currently
-unchanged) of that library at:
+parsers for the `language-css` library. I have a fork of that library at:
 https://github.com/dbp/language-css-attoparsec.
 
 You should install that locally, or `cabal sandbox add-source` a
 checkout of it.
+
+# Using
+
+If you are using the Snap Web Framework, you can use the provided
+`snaplet-lss` package. It's important to modify the development reloader
+in the generated `Main.hs` file in your project so that it will reload
+when `lss` files change. The line in question looks like:
+
+    ["snaplets/heist/templates"]
+
+And should be changed to:
+
+    ["snaplets/heist/templates", "snaplets/lss"]
+
 
 # Tests
 
