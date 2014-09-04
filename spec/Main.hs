@@ -27,6 +27,15 @@ buildState fs cs = LssState (M.fromList (consts cs)) (M.fromList (funcs fs))
                                                rules = rights (map (A.parseOnly P.rulesetp) b)
                                            in (C.Ident (T.unpack i), LssFunc params cs' rules))
 
+buildApp :: Text -> [Text] -> LssApp
+buildApp n as = let Right name = A.parseOnly P.identp n
+                    args = rights (map (A.parseOnly P.exprp) as)
+                 in LssApp name args
+
+unRight :: Either a b -> b
+unRight (Right v) = v
+unRight _ = error "Expected right"
+
 main :: IO ()
 main = hspec $ do
   describe "parseDefs" $ do
@@ -47,6 +56,27 @@ main = hspec $ do
     it "should parse local constants within a function" $ do
       parseDefs "x { y = 10em }" `shouldBe` (Right (buildState [("x", ([],[("y", "10em")],[]))]
                                                                []))
+    it "should parse a one argument function" $ do
+      parseDefs "x(size) {}" `shouldBe`
+        (Right (buildState [("x", (["size"],[],[]))] []))
     it "should parse arguments in a function" $ do
       parseDefs "x(size, weight) {}" `shouldBe`
         (Right (buildState [("x", (["size", "weight"],[],[]))] []))
+  describe "parseApp" $ do
+    it "should parse bare function name" $
+      parseApp "foo" `shouldBe` (Right (buildApp "foo" []))
+    it "should parse a function with parens" $
+      parseApp "foo()" `shouldBe` (Right (buildApp "foo" []))
+    it "should parse a function with one argument" $
+      parseApp "foo(#ccc)" `shouldBe` (Right (buildApp "foo" ["#ccc"]))
+  describe "apply" $ do
+    it "should produce body of argumentless function" $
+      apply (unRight $ parseDefs "x { p { font-size: 1em; } }")
+            (C.Ident "x")
+            []
+        `shouldBe` (Right [unRight $ A.parseOnly P.rulesetp "p { font-size: 1em; }"])
+    it "should do replacement within function" $
+      apply (unRight $ parseDefs "x(size) { p { font-size: size; } }")
+            (C.Ident "x")
+            [unRight $ A.parseOnly P.exprp "10em"]
+        `shouldBe` (Right [unRight $ A.parseOnly P.rulesetp "p { font-size: 10em; }"])
