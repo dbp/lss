@@ -80,3 +80,8 @@ main = hspec $ do
             (C.Ident "x")
             [unRight $ A.parseOnly P.exprp "10em"]
         `shouldBe` (Right [unRight $ A.parseOnly P.rulesetp "p { font-size: 10em; }"])
+    it "should replace global constants in blocks" $
+      apply (unRight $ parseDefs "size = 10em\nx { p { font-size: size; } }")
+            (C.Ident "x")
+            []
+        `shouldBe` (Right [unRight $ A.parseOnly P.rulesetp "p { font-size: 10em; }"])

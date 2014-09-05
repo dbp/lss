@@ -96,7 +96,8 @@ apply state ident args = case M.lookup ident (sFunctions state) of
                            Nothing -> Left $ "Unknown function: " ++ unIdent ident ++ "."
                            Just (LssFunc params locals body) | length params == length args ->
                              let localSubst = map (uncurry subst) (M.assocs locals)
-                             in Right $ map (\b -> foldr ($) b (zipWith subst params args ++ localSubst)) body
+                                 globalSubst = map (uncurry subst) (M.assocs (sConstants state))
+                             in Right $ map (\b -> foldr ($) b (zipWith subst params args ++ localSubst ++ globalSubst)) body
                            Just (LssFunc params _ _) ->
                              Left $ "Invalid number of arguments to " ++ unIdent ident
                                  ++ ": expected " ++ T.pack (show $ length params)
