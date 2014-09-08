@@ -1,5 +1,5 @@
 name:                lss
-version:             0.1.1.0
+version:             0.1.1.1
 synopsis:            Lexical Style Sheets - a language for writing styles that is focused around lexical (ie, static) scoping and re-use of large components.
 homepage:            https://github.com/dbp/lss
 license:             BSD3

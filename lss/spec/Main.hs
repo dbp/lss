@@ -44,6 +44,9 @@ main = hspec $ do
     it "should parse two consts" $ do
       parseDefs "x = #ccc\n y = 10em" `shouldBe` (Right (buildState [] [ ("x", "#ccc")
                                                                        , ("y", "10em")]))
+    it "should consts constants with newlines" $ do
+      parseDefs "yellow = #fff200\n"
+        `shouldBe` (Right (buildState [] [("yellow", "#fff200")]))
     it "should parse an argumentless, empty function" $ do
       parseDefs "x {}" `shouldBe` (Right (buildState [("x", ([],[],[]))] []))
     it "should parse an argumentless, empty function with parens" $ do

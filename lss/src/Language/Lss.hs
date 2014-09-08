@@ -56,6 +56,7 @@ isConst _ = False
 parseDefs :: Text -> Either String LssState
 parseDefs = A.parseOnly (lssGrammar <* A.endOfInput)
   where lssGrammar = do res <- A.many' (A.choice [A.skipSpace >> fun, A.skipSpace >> con])
+                        A.skipSpace
                         let (cons, funs) = partition isConst res
                         return (LssState (M.fromList $ map unConst cons) (M.fromList $ map unFun funs))
         fun = do ident <- P.identp
