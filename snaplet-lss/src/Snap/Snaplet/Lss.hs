@@ -10,7 +10,7 @@ import qualified Data.Text.IO       as T
 import           Data.Unique
 import           Heist              (Splices, getParamNode,
                                      hcInterpretedSplices, ( ## ))
-import           Heist.Interpreted  (Splice)
+import           Heist.Interpreted  (Splice, runChildren)
 import           Prelude            hiding ((++))
 import           Snap
 import           Snap.Snaplet.Heist (Heist, addConfig)
@@ -59,9 +59,10 @@ lssSplices st = "lss" ## lssSplice
                           Left err -> error $ "Lss: error applying " ++ (T.unpack $ unIdent ident)
                                            ++ ": " ++ T.unpack err
                           Right rules -> do
+                            childs' <- runChildren
                             let childs = case X.getAttribute "class" n of
-                                           Nothing -> X.elementChildren n
-                                           Just cls -> map (addClass cls) (X.elementChildren n)
+                                           Nothing -> childs'
+                                           Just cls -> map (addClass cls) childs'
                             sym <- (("lss" ++) . show . hashUnique) <$> liftIO newUnique
                             return $ attach sym rules childs
           where addClass newCls n@(X.Element _ attrs _) =
