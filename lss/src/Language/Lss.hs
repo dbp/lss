@@ -79,6 +79,7 @@ parseDefs = A.parseOnly (lssGrammar <* A.endOfInput)
                  A.char '='
                  A.skipSpace
                  expr <- P.exprp
+                 A.char ';'
                  return $ Const (ident, expr)
 
 parseApp = A.parseOnly (lssApplication <* A.endOfInput)

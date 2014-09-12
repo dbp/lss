@@ -40,10 +40,11 @@ two main goals / opinions:
 
 3. This isn't really a goal or opinion, but something that it seems
    bizare that CSS does not support: LSS has constants. They can be
-   either global or inside semantic blocks, and are defined with `=`, like:
+   either global or inside semantic blocks, and are defined with `=`,
+   with semicolons at the end of line, like:
 
    ```
-   acme-gray = #efefef
+   acme-gray = #efefef;
    ```
 
    These can then be used anywhere a CSS identifier is legal, which is

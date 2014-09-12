@@ -40,12 +40,12 @@ main :: IO ()
 main = hspec $ do
   describe "parseDefs" $ do
     it "should parse a bare const" $ do
-      parseDefs "x = #ccc" `shouldBe` (Right (buildState [] [("x", "#ccc")]))
+      parseDefs "x = #ccc;" `shouldBe` (Right (buildState [] [("x", "#ccc")]))
     it "should parse two consts" $ do
-      parseDefs "x = #ccc\n y = 10em" `shouldBe` (Right (buildState [] [ ("x", "#ccc")
-                                                                       , ("y", "10em")]))
+      parseDefs "x = #ccc;\n y = 10em;" `shouldBe` (Right (buildState [] [ ("x", "#ccc")
+                                                                         , ("y", "10em")]))
     it "should consts constants with newlines" $ do
-      parseDefs "yellow = #fff200\n"
+      parseDefs "yellow = #fff200;\n"
         `shouldBe` (Right (buildState [] [("yellow", "#fff200")]))
     it "should parse an argumentless, empty function" $ do
       parseDefs "x {}" `shouldBe` (Right (buildState [("x", ([],[],[]))] []))
@@ -57,8 +57,8 @@ main = hspec $ do
       parseDefs "x { p { font-size: 1em; } }" `shouldBe`
         (Right (buildState [("x", ([],[],["p { font-size: 1em; }"]))] []))
     it "should parse local constants within a function" $ do
-      parseDefs "x { y = 10em }" `shouldBe` (Right (buildState [("x", ([],[("y", "10em")],[]))]
-                                                               []))
+      parseDefs "x { y = 10em; }" `shouldBe` (Right (buildState [("x", ([],[("y", "10em")],[]))]
+                                                                []))
     it "should parse a one argument function" $ do
       parseDefs "x(size) {}" `shouldBe`
         (Right (buildState [("x", (["size"],[],[]))] []))
@@ -84,7 +84,7 @@ main = hspec $ do
             [unRight $ A.parseOnly P.exprp "10em"]
         `shouldBe` (Right [unRight $ A.parseOnly P.rulesetp "p { font-size: 10em; }"])
     it "should replace global constants in blocks" $
-      apply (unRight $ parseDefs "size = 10em\nx { p { font-size: size; } }")
+      apply (unRight $ parseDefs "size = 10em;\nx { p { font-size: size; } }")
             (C.Ident "x")
             []
         `shouldBe` (Right [unRight $ A.parseOnly P.rulesetp "p { font-size: 10em; }"])
