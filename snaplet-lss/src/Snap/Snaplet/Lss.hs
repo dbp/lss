@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Snap.Snaplet.Lss (Lss(..), initLss, lssSplices) where
 
+import           Control.Lens       (set, view)
 import           Control.Monad      (when)
 import           Data.List          (isSuffixOf)
 import           Data.Monoid
@@ -23,10 +24,10 @@ import           Language.Lss
 (++) :: Monoid d => d -> d -> d
 (++) = mappend
 
-data Lss = Lss
+data Lss = Lss { lssCount :: Int }
 
-initLss :: Snaplet (Heist b) -> SnapletInit b Lss
-initLss heist = makeSnaplet "lss" "" Nothing $ do
+initLss :: SnapletLens b Lss -> Snaplet (Heist b) -> SnapletInit b Lss
+initLss lens heist = makeSnaplet "lss" "" Nothing $ do
   dir <- getSnapletFilePath
   dirExists <- liftIO $ doesDirectoryExist dir
   when (not dirExists) $ liftIO $ createDirectory dir
@@ -41,12 +42,12 @@ initLss heist = makeSnaplet "lss" "" Nothing $ do
                                 Right stat -> return $ mappend s stat)
               mempty
               files
-  addConfig heist mempty { hcInterpretedSplices = lssSplices st }
-  return Lss
+  addConfig heist mempty { hcInterpretedSplices = lssSplices lens st }
+  return (Lss 0)
 
 
-lssSplices :: (MonadIO m, Functor m) => LssState -> Splices (Splice m)
-lssSplices st = "lss" ## lssSplice
+lssSplices :: SnapletLens b Lss -> LssState -> Splices (Splice (Handler b b))
+lssSplices lens st = "lss" ## lssSplice
   where lssSplice =
           do n <- getParamNode
              case X.getAttribute "apply" n of
@@ -63,7 +64,12 @@ lssSplices st = "lss" ## lssSplice
                             let childs = case X.getAttribute "class" n of
                                            Nothing -> childs'
                                            Just cls -> map (addClass cls) childs'
-                            sym <- (("lss" ++) . show . hashUnique) <$> liftIO newUnique
+                            count <- lift $ with lens $
+                                       do s <- getSnapletState
+                                          let (Lss n) = view snapletValue s
+                                          putSnapletState (set snapletValue (Lss (n+1)) s)
+                                          return n
+                            let sym = ("lss" ++) . show $ count
                             return $ attach sym rules childs
           where addClass newCls n@(X.Element _ attrs _) =
                   let classAttr = case lookup "class" attrs  of

@@ -37,7 +37,7 @@ routes = [("test", render "test")
 app = makeSnaplet "app" "An snaplet example application." Nothing $ do
          addRoutes routes
          h <- nestSnaplet "" heist $ heistInit "templates"
-         l <- nestSnaplet "" lss $ initLss h
+         l <- nestSnaplet "" lss $ initLss lss h
          return $ App h l
 
 
