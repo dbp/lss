@@ -1,5 +1,5 @@
 name:                snaplet-lss
-version:             0.1.1.0
+version:             0.1.1.1
 synopsis:            Lexical Style Sheets - Snap Web Framework adaptor.
 homepage:            https://github.com/dbp/lss
 license:             BSD3
@@ -35,5 +35,5 @@ Test-Suite test-snaplet-lss
                  lens,
                  text,
                  hspec-snap,
-                 hspec2
+                 hspec >= 2
   build-depends: snaplet-lss == 0.1.1.0
