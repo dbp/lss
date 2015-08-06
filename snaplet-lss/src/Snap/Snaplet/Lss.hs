@@ -2,7 +2,8 @@
 module Snap.Snaplet.Lss (Lss(..), initLss, lssSplices) where
 
 import           Control.Lens       (set, view)
-import           Control.Monad      (when)
+import           Control.Monad      (when, foldM)
+import           Control.Monad.Trans (lift, liftIO)
 import           Data.List          (isSuffixOf)
 import           Data.Monoid
 import           Data.Text          (Text)
