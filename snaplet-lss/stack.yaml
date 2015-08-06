@@ -1,0 +1,10 @@
+flags: {}
+packages:
+- '.'
+- '../lss'
+- location:
+    git: https://github.com/dbp/language-css-attoparsec
+    commit: HEAD
+extra-deps:
+- language-css-0.0.3
+resolver: nightly-2015-07-03

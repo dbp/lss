@@ -1,24 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Snap.Snaplet.Lss (Lss(..), initLss, lssSplices) where
 
-import           Control.Lens       (set, view)
-import           Control.Monad      (when, foldM)
+import           Control.Lens        (set, view)
+import           Control.Monad       (foldM, when)
 import           Control.Monad.Trans (lift, liftIO)
-import           Data.List          (isSuffixOf)
+import           Data.List           (isSuffixOf)
 import           Data.Monoid
-import           Data.Text          (Text)
-import qualified Data.Text          as T
-import qualified Data.Text.IO       as T
+import           Data.Text           (Text)
+import qualified Data.Text           as T
+import qualified Data.Text.IO        as T
 import           Data.Unique
-import           Heist              (Splices, getParamNode,
-                                     hcInterpretedSplices, ( ## ))
-import           Heist.Interpreted  (Splice, runChildren)
-import           Prelude            hiding ((++))
+import           Heist               (Splices, getParamNode,
+                                      scInterpretedSplices, ( ## ))
+import           Heist.Interpreted   (Splice, runChildren)
+import           Prelude             hiding ((++))
 import           Snap
-import           Snap.Snaplet.Heist (Heist, addConfig)
+import           Snap.Snaplet.Heist  (Heist, addConfig)
 import           System.Directory
 import           System.FilePath
-import qualified Text.XmlHtml       as X
+import qualified Text.XmlHtml        as X
 
 import           Language.Lss
 
@@ -43,7 +43,7 @@ initLss lens heist = makeSnaplet "lss" "" Nothing $ do
                                 Right stat -> return $ mappend s stat)
               mempty
               files
-  addConfig heist mempty { _scInterpretedSplices = lssSplices lens st }
+  addConfig heist (set scInterpretedSplices (lssSplices lens st) mempty)
   return (Lss 0)
 
 
