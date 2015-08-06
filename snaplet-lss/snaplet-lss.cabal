@@ -14,7 +14,7 @@ library
   build-depends:       base >=4.5 && < 5,
                        lss >= 0.1 && < 0.3,
                        xmlhtml >= 0.1 && < 0.3,
-                       heist,
+                       heist >= 0.14,
                        snap,
                        lens,
                        text,
