@@ -18,6 +18,7 @@ library
                        snap,
                        lens,
                        text,
+                       mtl,
                        directory,
                        filepath
   hs-source-dirs:      src/
