@@ -43,7 +43,7 @@ initLss lens heist = makeSnaplet "lss" "" Nothing $ do
                                 Right stat -> return $ mappend s stat)
               mempty
               files
-  addConfig heist mempty { hcInterpretedSplices = lssSplices lens st }
+  addConfig heist mempty { _scInterpretedSplices = lssSplices lens st }
   return (Lss 0)
 
 
